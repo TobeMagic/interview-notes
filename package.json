@@ -1,0 +1,17 @@
+{
+  "name": "interview-notes",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "前端 / Node / Go / 数据库 八股文开源笔记",
+  "scripts": {
+    "build": "node build.mjs",
+    "serve": "node build.mjs --serve",
+    "check": "node build.mjs --check"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "marked": "^15.0.0",
+    "markdown-it-anchor": "^9.2.0"
+  }
+}
