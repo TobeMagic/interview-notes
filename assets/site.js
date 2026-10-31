@@ -1,4 +1,4 @@
-/* 八股志 · 交互：目录筛选、阅读进度、键盘快捷键 */
+/* 八股志 · 阅读交互 */
 (function () {
   'use strict';
 
@@ -23,41 +23,100 @@
     });
   }
 
-  /* ---------- 正文目录高亮 ---------- */
-  var tocLinks = Array.prototype.slice.call(document.querySelectorAll('.toc-a'));
-  if (tocLinks.length && 'IntersectionObserver' in window) {
-    var map = {};
-    tocLinks.forEach(function (a) {
-      var id = decodeURIComponent(a.getAttribute('href').slice(1));
-      var el = document.getElementById(id);
-      if (el) map[id] = a;
+  /* ---------- 右侧跟随轨 ---------- */
+  var secs = Array.prototype.slice.call(document.querySelectorAll('.sec[data-chapter]'));
+  var railLinks = Array.prototype.slice.call(document.querySelectorAll('.rail-secs a'));
+  var railChapters = Array.prototype.slice.call(document.querySelectorAll('.rail-ch'));
+  var nowCh = document.getElementById('rail-now-ch');
+  var nowSec = document.getElementById('rail-now-sec');
+  var bar = document.getElementById('rail-bar');
+
+  function activate(secEl) {
+    if (!secEl) return;
+    var ci = secEl.getAttribute('data-chapter');
+    var si = secEl.getAttribute('data-sec');
+
+    railChapters.forEach(function (el) {
+      el.classList.toggle('on', el.getAttribute('data-chapter') === ci);
     });
-    var current = null;
+    railLinks.forEach(function (a) {
+      var on = a.getAttribute('data-chapter') === ci && a.getAttribute('data-sec') === si;
+      a.classList.toggle('on', on);
+    });
+
+    if (nowCh) {
+      var chEl = document.querySelector('.chapter[data-chapter="' + ci + '"]');
+      var h = chEl && chEl.querySelector('.ch-h h2');
+      nowCh.textContent = h ? h.textContent : '';
+    }
+    if (nowSec) nowSec.textContent = secEl.getAttribute('data-title') || '';
+  }
+
+  var current = null;
+  if ('IntersectionObserver' in window && secs.length) {
     var io = new IntersectionObserver(
       function (entries) {
         entries.forEach(function (en) {
           if (!en.isIntersecting) return;
-          var a = map[en.target.id];
-          if (!a || a === current) return;
-          if (current) current.classList.remove('on');
-          a.classList.add('on');
-          current = a;
+          if (en.target === current) return;
+          current = en.target;
+          activate(current);
         });
       },
-      { rootMargin: '-10% 0px -75% 0px', threshold: 0 }
+      { rootMargin: '-88px 0px -70% 0px', threshold: 0 }
     );
-    Object.keys(map).forEach(function (id) {
-      io.observe(document.getElementById(id));
+    secs.forEach(function (s) {
+      io.observe(s);
     });
+    activate(secs[0]);
+  }
+
+  /* ---------- 移动端目录 ---------- */
+  var mbToggle = document.getElementById('mb-toggle');
+  var mbPanel = document.getElementById('mb-panel');
+  var mbCur = document.getElementById('mb-cur');
+  if (mbToggle && mbPanel) {
+    mbToggle.addEventListener('click', function () {
+      var open = mbPanel.classList.toggle('open');
+      mbToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    mbPanel.addEventListener('click', function (e) {
+      if (e.target.closest('a')) {
+        mbPanel.classList.remove('open');
+        mbToggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+  if (mbCur) {
+    var syncCur = function () {
+      if (nowCh && nowCh.textContent) mbCur.textContent = nowCh.textContent;
+    };
+    var _act = activate;
+    activate = function (el) { _act(el); syncCur(); };
+  }
+
+  /* ---------- 阅读进度 ---------- */
+  var article = document.querySelector('.doc-body');
+  if (bar && article) {
+    var onScroll = function () {
+      var rect = article.getBoundingClientRect();
+      var total = rect.height - window.innerHeight * 0.6;
+      var done = -rect.top;
+      var p = total > 0 ? Math.min(1, Math.max(0, done / total)) : 0;
+      bar.style.width = (p * 100).toFixed(1) + '%';
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    onScroll();
   }
 
   /* ---------- 外部链接新窗口 ---------- */
-  document.querySelectorAll('.doc-body a[href^="http"]').forEach(function (a) {
+  document.querySelectorAll('.doc-body a[href^="http"], .sec-body a[href^="http"]').forEach(function (a) {
     a.setAttribute('target', '_blank');
     a.setAttribute('rel', 'noopener noreferrer');
   });
 
-  /* ---------- 键盘：← → 翻篇 ---------- */
+  /* ---------- 键盘翻篇 ---------- */
   var prev = document.querySelector('.pager.prev');
   var next = document.querySelector('.pager.next');
   document.addEventListener('keydown', function (e) {
