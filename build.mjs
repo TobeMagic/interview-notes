@@ -364,9 +364,9 @@ function buildModule(doc, pos) {
     .map((c, i) => {
       const secs = c.sections.filter((x) => x.title);
       return `<div class="rail-ch" data-chapter="${i}">
-      <a class="rail-ch-t" href="#${c.id}"><i>${String(i + 1).padStart(2, '0')}</i>${esc(c.title)}</a>
+      <a class="rail-ch-t" href="#${c.id}"><i>${String(i + 1).padStart(2, '0')}</i><span class="rail-ct">${esc(c.title)}</span><span class="rail-n">${secs.length}</span></a>
       <ol class="rail-secs">
-        ${secs.map((s, si) => `<li><a href="#${s.id}" data-chapter="${i}" data-sec="${si}">${s.no ? `<i>${esc(s.no)}</i>` : ''}${esc(s.title)}</a></li>`).join('')}
+        ${secs.map((s, si) => `<li><a href="#${s.id}" data-chapter="${i}" data-sec="${si}">${s.no ? `<i>${esc(s.no)}</i>` : ''}${s.star ? '<em class="rail-star">★</em>' : ''}<span>${esc(s.title)}</span></a></li>`).join('')}
       </ol>
     </div>`;
     })
@@ -386,7 +386,7 @@ function buildModule(doc, pos) {
         <div class="mb-panel-in">
           ${chapters.map((c, i) => `<div class="mb-ch">
             <a class="mb-ch-t" href="#${c.id}"><i>${String(i + 1).padStart(2, '0')}</i>${esc(c.title)}</a>
-            <ol class="mb-secs">${c.sections.filter((x) => x.title).map((s2) => `<li><a href="#${s2.id}">${s2.no ? `<i>${esc(s2.no)}</i>` : ''}${esc(s2.title)}</a></li>`).join('')}</ol>
+            <ol class="mb-secs">${c.sections.filter((x) => x.title).map((s2) => `<li><a href="#${s2.id}">${s2.no ? `<i>${esc(s2.no)}</i>` : ''}${s2.star ? '<em class="rail-star">★</em>' : ''}${esc(s2.title)}</a></li>`).join('')}</ol>
           </div>`).join('')}
         </div>
       </div>
