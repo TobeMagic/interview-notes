@@ -104,7 +104,7 @@ const user = JSON.parse(raw) as User;
 
 **什么时候需要 `.d.ts`**：`declaration: true` 时生成。库作者必须开，业务项目通常不需要——除非你要给别人提供类型。
 
-### 3.⚠️TypeScript 的编译器是什么写的
+### 3.TypeScript 的编译器是什么写的
 
 **一句话**：历史上是自举的 TypeScript/JavaScript 实现，**7.0 起是 Go 重写的原生端口**，命令还是 `tsc`。
 
@@ -124,7 +124,7 @@ const user = JSON.parse(raw) as User;
 
 **细节**：
 
-**⚠️ 别说这三个答案**：
+**别答错这三处**：
 
 - 「TypeScript 用 TypeScript 自己写的」——那是 6.x 之前。
 - 「TypeScript 编译器是 Node 写的」——它是 JS 写的，跑在 Node 上。
@@ -195,7 +195,7 @@ const s = typeof x;     // 值位置：运行时的 typeof，结果是 "number"
 
 **面经**：美团 · 前端那道「TS 和 JS 的区别」的标准答法里就要求说清「编译后类型大多被擦除，运行时执行的仍是 JavaScript」。https://mianshidashi.cn/interview-questions/meituan/frontend-engineer/typescript-vs-javascript-difference
 
-### 5.⚠️哪些 TS 语法不会被擦除
+### 5.哪些 TS 语法不会被擦除
 
 **一句话**：`enum`、`namespace`、参数属性、装饰器——这四样会在产物里留下运行时痕迹。
 
@@ -1928,7 +1928,7 @@ class Service {
 
 编译后，`@log` 变成一次函数调用，把原来的方法包起来。
 
-**⚠️ 两套装饰器**：
+**两套装饰器**：
 
 | | 旧（experimental） | 新（TC39 Stage 3） |
 | --- | --- | --- |
@@ -1943,7 +1943,7 @@ class Service {
 
 **TS 没有 Java 那种反射**：它只是按约定发出 `design:paramtypes` 元数据，再由 `reflect-metadata` 读出来。所以「TS 有反射吗」的答案是：语言本身没有，靠装饰器元数据模拟。
 
-**⚠️ NestJS 为什么还停在旧装饰器**：它的依赖注入靠构造函数参数类型，而参数类型和参数装饰器恰好是 Stage 3 不支持的两样。维护者的公开立场是短期不会换。
+**NestJS 为什么还停在旧装饰器**：它的依赖注入靠构造函数参数类型，而参数类型和参数装饰器恰好是 Stage 3 不支持的两样。维护者的公开立场是短期不会换。
 
 **面经**：字节 · 前端一面（75 分钟）问过装饰器。https://www.nowcoder.com/discuss/799382455135293440
 
