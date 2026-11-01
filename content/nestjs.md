@@ -41,7 +41,7 @@ export class UserService {
 
 **追问：为什么接口不能直接注入？** 因为接口在运行时不存在（类型擦除），元数据里没有它的类型信息。要用 `@Inject('TOKEN')` 显式指定 token，或者用抽象类（抽象类编译后是真实的值）。
 
-**追问：⚠️为什么必须开旧装饰器？** 因为构造函数参数类型和参数装饰器恰好是 TC39 Stage 3 装饰器不支持的两样。NestJS 维护者的公开回复说明短期内不会换，所以 `experimentalDecorators` + `emitDecoratorMetadata` 是必需项，不是遗留包袱。
+**追问：为什么必须开旧装饰器？** 因为构造函数参数类型和参数装饰器恰好是 TC39 Stage 3 装饰器不支持的两样。NestJS 维护者的公开回复说明短期内不会换，所以 `experimentalDecorators` + `emitDecoratorMetadata` 是必需项，不是遗留包袱。
 
 **面经**：腾讯微信基础部一面：依赖注入是什么；和 Java IoC / Spring 的关系。https://www.nowcoder.com/discuss/865669284599513088
 
