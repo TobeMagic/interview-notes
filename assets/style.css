@@ -651,8 +651,8 @@ a { color: inherit; text-decoration: none; }
 .rail-ch-t i { font-family: var(--mono); font-style: normal; font-size: 12px; }
 .rail-ch-t:hover { color: var(--vermilion); }
 .rail-ch.on .rail-ch-t { color: var(--ink); font-weight: 600; }
-.rail-secs { list-style: none; margin: 0 0 8px; padding: 0 0 0 12px; border-left: 1px solid var(--rule-2); display: none; }
-.rail-ch.on .rail-secs { display: block; }
+.rail-ch-t .rail-n { font-family: var(--mono); font-size: 11px; color: var(--ink-4); margin-left: auto; }
+.rail-secs { list-style: none; margin: 0 0 10px; padding: 0 0 0 12px; border-left: 1px solid var(--rule-2); display: block; }
 .rail-secs a {
   display: block;
   padding: 5px 8px;
@@ -931,3 +931,10 @@ a { color: inherit; text-decoration: none; }
 @media (max-width: 640px) {
   .mobile-bar { top: 76px; margin: 0 -16px; padding: 0 16px; }
 }
+
+/* 右侧目录：星标与排版 */
+.rail-ch-t .rail-ct { flex: 1; min-width: 0; }
+.rail-secs a { display: flex; align-items: baseline; gap: 4px; }
+.rail-secs a span { flex: 1; min-width: 0; }
+.rail-star { font-style: normal; color: var(--vermilion); font-size: 11px; flex: none; line-height: 1.5; }
+.mb-secs .rail-star { font-style: normal; color: var(--vermilion); font-size: 12px; margin-right: 3px; }
