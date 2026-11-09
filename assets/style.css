@@ -516,12 +516,12 @@ a { color: inherit; text-decoration: none; }
 }
 .doc-body hr, .sec-body hr { border: 0; border-top: 1px solid var(--rule); margin: 30px 0; }
 
-/* 一句话 */
+/* 记忆锚点 / 一句话 */
 .oneline {
   border-left: 3px solid var(--vermilion);
-  background: rgba(168, 52, 31, 0.055);
+  background: rgba(168, 52, 31, 0.065);
   padding: 15px 18px 16px;
-  margin: 0 0 20px;
+  margin: 0 0 22px;
 }
 .oneline-tag {
   display: block;
@@ -529,35 +529,89 @@ a { color: inherit; text-decoration: none; }
   font-size: 13px;
   letter-spacing: 0.16em;
   color: var(--vermilion);
-  margin-bottom: 7px;
-  font-weight: 500;
+  margin-bottom: 6px;
+  font-weight: 600;
 }
 .oneline-body { font-size: 18px; line-height: 1.8; }
 .oneline-body p { margin: 0; font-size: 18px; }
+.oneline-body strong { color: var(--vermilion-ink); font-weight: 700; }
 
-/* 背景 / 原理 / 细节 / 注意 */
+/* 痛点与直觉 / 核心机制 / 视觉图解 / 注意 */
 .callout {
-  margin: 0 0 20px;
-  padding: 2px 0 2px 16px;
-  border-left: 2px solid var(--rule);
+  margin: 0 0 22px;
+  padding: 4px 0 4px 18px;
+  border-left: 2.5px solid var(--rule);
 }
 .callout-l {
-  display: block;
+  display: inline-block;
   font-family: var(--sans);
-  font-size: 13.5px;
-  letter-spacing: 0.14em;
+  font-size: 13px;
+  letter-spacing: 0.15em;
   color: var(--ink-3);
-  margin-bottom: 6px;
+  margin-bottom: 10px;
   font-weight: 600;
+  padding: 1px 8px;
+  background: rgba(23, 19, 15, 0.05);
 }
 .callout-b { font-size: 17.5px; line-height: 1.9; }
 .callout-b > *:last-child { margin-bottom: 0; }
 .callout--bg { border-left-color: #8C7A62; }
+.callout--bg .callout-l { color: #5E4E3A; background: rgba(140, 122, 98, 0.12); }
+.callout--diagram { border-left-color: #3D5A73; }
+.callout--diagram .callout-l { color: #2B4357; background: rgba(61, 90, 115, 0.11); }
 .callout--why { border-left-color: #3E6B5A; }
-.callout--why .callout-l { color: #2F5648; }
-.callout--warn { border-left-color: var(--vermilion); background: rgba(168, 52, 31, 0.04); padding: 12px 16px 12px 16px; }
-.callout--warn .callout-l { color: var(--vermilion); }
+.callout--why .callout-l { color: #264A3C; background: rgba(62, 107, 90, 0.12); }
+.callout--why ol > li {
+  margin-bottom: 10px;
+  padding-left: 2px;
+}
+.callout--why ol > li > strong:first-child {
+  color: var(--ink);
+  font-weight: 600;
+  background: linear-gradient(transparent 66%, rgba(62, 107, 90, 0.18) 66%);
+  padding: 0 2px;
+}
+.callout--warn { border-left-color: var(--vermilion); background: rgba(168, 52, 31, 0.04); padding: 12px 16px 12px 18px; }
+.callout--warn .callout-l { color: var(--vermilion); background: rgba(168, 52, 31, 0.1); }
 .callout--concl { border-left-color: var(--ink); }
+
+/* 30s 考场口述卡片 */
+.recite-box {
+  border: 1px solid var(--rule);
+  border-left: 3.5px solid var(--ink);
+  background: var(--paper-2);
+  padding: 15px 20px 17px;
+  margin: 22px 0 14px;
+}
+.recite-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  font-family: var(--sans);
+}
+.recite-badge {
+  font-size: 12.5px;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  color: var(--paper);
+  background: var(--ink);
+  padding: 2px 9px;
+}
+.recite-tip {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+}
+.recite-body p {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.9;
+  color: var(--ink);
+}
+.recite-body p + p { margin-top: 10px; }
+.recite-body strong { color: var(--vermilion-ink); font-weight: 600; }
 
 /* 面经 */
 .src {
@@ -834,6 +888,9 @@ a { color: inherit; text-decoration: none; }
   .oneline { padding: 12px 14px 13px; }
   .oneline-body, .oneline-body p { font-size: 17px; }
   .callout-b { font-size: 17px; }
+  .recite-box { padding: 13px 15px 14px; }
+  .recite-body p { font-size: 16.5px; }
+  .recite-tip { display: none; }
   .src { padding: 10px 12px; gap: 9px; }
   .src-body, .src-body ul { font-size: 15px; }
 
