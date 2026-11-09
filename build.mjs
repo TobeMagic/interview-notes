@@ -1,16 +1,18 @@
 #!/usr/bin/env node
 /**
- * 八股志生成器。
+ * 八股志生成器（认知记忆版）。
  *
  * 源文件分层：
  *   # 篇名
  *   ## 大章
  *   ### 1.🌟小节标题
  *
- * 标记：
- *   **一句话**：核心结论     → 导语块
- *   **背景**：／**原理**：／**细节**：／**注意**：  → 小标题段落
- *   **面经**：公司/轮次/链接 → 引用条
+ * 认知四步标记（按行分段）：
+ *   **记忆锚点**：／**一句话**：  → 顶部记忆钩子卡 (.oneline)
+ *   **痛点与直觉**：／**背景**：  → 痛点推导与生活类比 (.callout--bg)
+ *   **核心机制**：／**三点组块**： → 视觉图解 + 3±1 组块 (.callout--why)
+ *   **考场口述**：               → 30s 第一人称口述串词 (.recite-box)
+ *   **面经**：                   → 真实公司原题出处 (.src)
  */
 
 import fs from 'node:fs';
@@ -110,51 +112,71 @@ function parseDoc(raw) {
 /* ---------------------------------------------------------------- 渲染 */
 
 const CALLOUTS = {
+  痛点与直觉: 'bg',
   背景: 'bg',
+  视觉图解: 'diagram',
+  核心机制: 'why',
+  三点核心组块: 'why',
+  三点组块: 'why',
+  核心组块: 'why',
   原理: 'why',
   细节: 'detail',
+  展开: 'detail',
   注意: 'warn',
   结论: 'concl',
   对比: 'detail',
   做法: 'detail',
 };
 
+const PHASE_RE =
+  /^\*\*(记忆锚点|一句话|痛点与直觉|背景|视觉图解|核心机制|三点核心组块|三点组块|核心组块|原理|细节|展开|注意|结论|对比|做法|考场口述|30\s*秒口述|面经)\*\*[：:]\s*(.*)$/;
+
+function renderSegment(seg) {
+  const md = seg.lines.join('\n').trim();
+  if (!seg.label) {
+    return md ? marked.parse(md) : '';
+  }
+
+  if (seg.label === '记忆锚点' || seg.label === '一句话') {
+    const tag = seg.label === '记忆锚点' ? '记忆锚点' : '一句话';
+    return `<div class="oneline"><span class="oneline-tag">${tag}</span><div class="oneline-body">${marked.parse(md)}</div></div>`;
+  }
+
+  if (seg.label === '考场口述' || /口述/.test(seg.label)) {
+    return `<div class="recite-box"><div class="recite-head"><span class="recite-badge">30s 考场口述</span><span class="recite-tip">先定性 · 拆三点 · 亮底牌</span></div><div class="recite-body">${marked.parse(md)}</div></div>`;
+  }
+
+  if (seg.label === '面经') {
+    if (!md || /^暂无/.test(md)) return '';
+    return `<div class="src"><span class="src-tag">面经</span><div class="src-body">${marked.parse(md)}</div></div>`;
+  }
+
+  const kind = CALLOUTS[seg.label] || 'detail';
+  return `<div class="callout callout--${kind}"><span class="callout-l">${esc(seg.label)}</span><div class="callout-b">${marked.parse(md)}</div></div>`;
+}
+
 function renderBody(md) {
-  let html = marked.parse(md || '');
+  const lines = (md || '').split('\n');
+  const segments = [];
+  let cur = { label: null, lines: [] };
+  let inFence = false;
 
-  html = html.replace(/<p><strong>一句话<\/strong>[：:]\s*([\s\S]*?)<\/p>/g,
-    (_, inner) => `<div class="oneline"><span class="oneline-tag">一句话</span><div class="oneline-body">${inner.trim()}</div></div>`);
-
-  // **背景**：xxx → 带小标题的段落
-  html = html.replace(
-    /<p><strong>([^<]{2,4})<\/strong>[：:]\s*([\s\S]*?)<\/p>/g,
-    (m, label, inner) => {
-      const kind = CALLOUTS[label];
-      if (!kind) return m;
-      return `<div class="callout callout--${kind}"><span class="callout-l">${label}</span><div class="callout-b">${inner.trim()}</div></div>`;
+  for (const line of lines) {
+    if (/^```/.test(line)) inFence = !inFence;
+    if (!inFence) {
+      const m = line.match(PHASE_RE);
+      if (m) {
+        if (cur.label || cur.lines.join('').trim()) segments.push(cur);
+        cur = { label: m[1].replace(/\s+/g, ' '), lines: [] };
+        if (m[2] && m[2].trim()) cur.lines.push(m[2].trim());
+        continue;
+      }
     }
-  );
+    cur.lines.push(line);
+  }
+  if (cur.label || cur.lines.join('').trim()) segments.push(cur);
 
-  // 列表形式的背景/原理
-  html = html.replace(
-    /<p><strong>([^<]{2,4})<\/strong>[：:]\s*<\/p>\s*(<(?:ul|ol)>[\s\S]*?<\/(?:ul|ol)>)/g,
-    (m, label, list) => {
-      const kind = CALLOUTS[label];
-      if (!kind) return m;
-      return `<div class="callout callout--${kind}"><span class="callout-l">${label}</span><div class="callout-b">${list}</div></div>`;
-    }
-  );
-
-  html = html.replace(/<p><strong>面经<\/strong>[：:]\s*([\s\S]*?)<\/p>/g, (_, inner) => {
-    const txt = inner.trim();
-    if (!txt || /^暂无/.test(txt)) return '';
-    return `<div class="src"><span class="src-tag">面经</span><div class="src-body">${txt}</div></div>`;
-  });
-
-  html = html.replace(/<p><strong>面经<\/strong>[：:]\s*<\/p>\s*(<ul>[\s\S]*?<\/ul>)/g,
-    (_, ul) => `<div class="src"><span class="src-tag">面经</span><div class="src-body">${ul}</div></div>`);
-
-  return html;
+  return segments.map(renderSegment).join('\n');
 }
 
 function renderSection(item, ci, si) {
@@ -246,8 +268,8 @@ function footer(doneCount, totalSec) {
       <p>开源面试笔记。${doneCount} / ${MODULES.length} 篇完稿，共 ${totalSec} 节。</p>
     </div>
     <div class="foot-col">
-      <div class="foot-h">写法</div>
-      <p>每节讲清背景、原理、细节。<br>公司原题挂在节下。<br>过时的答案标版本分界。</p>
+      <div class="foot-h">记忆四步法</div>
+      <p>记忆锚点 · 痛点与直觉 · 视觉图解与三点组块 · 30s 考场口述。</p>
     </div>
     <div class="foot-col">
       <div class="foot-h">来源</div>
@@ -291,18 +313,19 @@ function buildIndex(docs) {
 <main>
   <section class="lead">
     <div class="lead-main">
-      <div class="kicker">本期要目</div>
-      <h2>把「面试会问什么」写成<em>能从头读到尾</em>的东西。</h2>
-      <p class="drop">市面上讲 Java 的八股文已经足够多，前端、Node、Go 和 PostgreSQL 这一侧却散落在面经帖、博客和口口相传里。这本册子按模块收拢：每一篇是一章，章下按节编号，每一节都先把背景交代清楚，再讲原理，最后落到细节和坑。</p>
-      <p>不写「一句话糊弄完就追问」的速查卡。要能看懂，也要能背下来。公司原题挂在节下，只留<strong>公司、轮次、原题一句、链接</strong>；关键结论标注官方文档出处。</p>
+      <div class="kicker">本期要目 · 认知记忆版</div>
+      <h2>把「面试会问什么」写成<em>顺着直觉看懂、上场张口能背</em>的东西。</h2>
+      <p class="drop">市面上讲 Java 的八股文已经足够多，前端、Node、Go 和 PostgreSQL 这一侧却散落在面经帖、博客和口口相传里。这本册子按认知心理学的记忆规律编排：每一节先给一句带画面感的记忆锚点，再从痛点与生活类比切入，配一张空间结构图和 3 个核心组块，最后落到 30 秒第一人称考场口述串词。</p>
+      <p>看懂靠「痛点推导 + 空间图解」，背诵靠「三点组块 + 考场口述」。公司原题挂在节下，只留<strong>公司、轮次、原题一句、链接</strong>；关键结论标注官方文档出处。</p>
       <p>网上大量答案已经过时。<strong>Go 1.24 的 map 不再是分桶加溢出桶，TypeScript 7 的编译器已经是 Go 写的原生端口</strong>——这类版本分界在正文里逐条标出。</p>
     </div>
     <aside class="lead-side">
-      <div class="side-h">每节的写法</div>
+      <div class="side-h">大脑记忆四步法</div>
       <ol class="rules">
-        <li><b>背景</b>这个问题从哪来，不解决会怎样</li>
-        <li><b>原理</b>机制怎么转，关键数据结构长什么样</li>
-        <li><b>细节</b>版本差异、边界情况、常见踩坑</li>
+        <li><b>锚点</b>6–12 字画面口诀，一秒唤醒整题骨架</li>
+        <li><b>痛点</b>不这么设计会死在哪，挂钩生活直觉</li>
+        <li><b>组块</b>空间结构图 + 3 个核心记忆点，不超载</li>
+        <li><b>口述</b>30 秒第一人称考场串词，先定性再拆解</li>
       </ol>
       <div class="side-stats">
         <div><b>${MODULES.length}</b><span>篇</span></div>
